@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#30241e">
+  <meta name="description" content="Kopi Senja — kopi lokal dan camilan hangat untuk menemani harimu.">
+  <title>Kopi Senja — Kopi &amp; Snack Lokal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'sans-serif'], serif: ['Playfair Display', 'serif'] },
+          colors: { kopi: '#30241e', krem: '#f7f2e9', karamel: '#c68b51', bata: '#a65e43' }
+        }
+      }
+    };
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; }
+  </style>
+</head>
+<body class="bg-krem font-sans text-kopi antialiased">
+  <header class="fixed inset-x-0 top-0 z-30 border-b border-white/10 bg-kopi/95 text-white backdrop-blur">
+    <nav class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6" aria-label="Navigasi utama">
+      <a href="#beranda" class="flex items-center gap-2 font-serif text-xl font-bold">
+        <span class="grid h-9 w-9 place-items-center rounded-full bg-karamel text-kopi" aria-hidden="true">☕</span>
+        Kopi Senja
+      </a>
+      <div class="hidden gap-7 text-sm text-stone-200 sm:flex">
+        <a class="transition hover:text-karamel" href="#menu">Menu</a>
+        <a class="transition hover:text-karamel" href="#lokasi">Lokasi</a>
+      </div>
+      <button id="headerCartButton" type="button" class="relative grid h-10 w-10 place-items-center rounded-full border border-white/20 hover:text-karamel" aria-label="Buka keranjang">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 3h2l2.4 11.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L20.5 7H6"/><circle cx="10" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg>
+        <span id="headerCount" class="absolute -right-1 -top-1 hidden min-w-5 rounded-full bg-bata px-1 text-center text-xs leading-5">0</span>
+      </button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="beranda" class="overflow-hidden bg-kopi pt-16 text-white">
+      <div class="mx-auto grid min-h-[620px] max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 md:grid-cols-2 md:py-20">
+        <div>
+          <p class="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[.18em] text-stone-300"><span class="h-2 w-2 rounded-full bg-karamel"></span> Racikan lokal, suasana akrab</p>
+          <h1 class="font-serif text-5xl leading-tight font-bold sm:text-6xl lg:text-7xl">Temukan Hangat di Setiap <span class="text-karamel">Seruput.</span></h1>
+          <p class="mt-6 max-w-lg text-base leading-7 text-stone-300 sm:text-lg">Kopi pilihan dan camilan rumahan untuk menemani jeda kecil, obrolan panjang, dan senja favoritmu.</p>
+          <div class="mt-8 flex flex-wrap items-center gap-5">
+            <a href="#menu" class="rounded-full bg-karamel px-7 py-3.5 text-sm font-bold text-kopi transition hover:-translate-y-0.5 hover:bg-amber-400">Pesan Sekarang</a>
+            <span class="text-sm text-stone-400">Buka setiap hari · 08.00–22.00</span>
+          </div>
+        </div>
+        <div class="relative mx-auto w-full max-w-lg">
+          <div class="absolute -inset-4 rotate-3 rounded-[2rem] border border-white/15"></div>
+          <img class="relative h-[380px] w-full rounded-[1.75rem] object-cover shadow-2xl sm:h-[480px]" src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&amp;fit=crop&amp;w=1000&amp;q=85" alt="Kopi dan suasana hangat di Kopi Senja">
+          <div class="absolute -bottom-5 left-4 rounded-2xl bg-white px-5 py-4 text-kopi shadow-xl sm:-left-5">
+            <p class="text-xs text-stone-500">Teman senja paling pas</p><p class="mt-1 font-serif text-lg font-bold">Es Kopi Senja</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="menu" class="mx-auto max-w-6xl px-4 py-20 sm:px-6 md:py-24">
+      <div class="mb-10 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div><p class="text-sm font-bold uppercase tracking-[.2em] text-bata">Dibuat segar setiap hari</p><h2 class="mt-2 font-serif text-4xl font-bold sm:text-5xl">Menu Favorit</h2></div>
+        <p class="max-w-sm text-sm leading-6 text-stone-600">Bahan pilihan, racikan penuh perhatian, dan rasa lokal yang bikin ingin kembali.</p>
+      </div>
+      <div id="productGrid" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"></div>
+    </section>
+
+    <section id="lokasi" class="bg-white">
+      <div class="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 md:grid-cols-2 md:py-20">
+        <div class="flex min-h-72 items-center justify-center rounded-3xl bg-[radial-gradient(circle_at_30%_30%,#eee4d7,#d6c3a9)] p-8 text-center">
+          <div><span class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-kopi text-2xl text-white" aria-hidden="true">⌖</span><p class="mt-5 font-serif text-2xl font-bold">Kopi Senja</p><p class="mt-2 text-sm text-stone-600">Jl. Senja No. 17, Yogyakarta</p></div>
+        </div>
+        <div class="flex flex-col justify-center md:pl-8">
+          <p class="text-sm font-bold uppercase tracking-[.2em] text-bata">Mampir, yuk</p><h2 class="mt-3 font-serif text-4xl font-bold">Lokasi &amp; Jam Buka</h2>
+          <div class="mt-8 space-y-5">
+            <div class="flex gap-4 border-b border-stone-200 pb-5"><span aria-hidden="true">📍</span><div><p class="font-bold">Alamat</p><p class="mt-1 text-sm text-stone-600">Jl. Senja No. 17, Yogyakarta</p></div></div>
+            <div class="flex gap-4 border-b border-stone-200 pb-5"><span aria-hidden="true">🕘</span><div><p class="font-bold">Jam Operasional</p><p class="mt-1 text-sm text-stone-600">Setiap hari, 08.00–22.00 WIB</p></div></div>
+            <a class="w-fit rounded-full border border-kopi px-5 py-3 text-sm font-bold transition hover:bg-kopi hover:text-white" href="https://maps.google.com/?q=Jl.+Senja+No.+17+Yogyakarta" target="_blank" rel="noopener noreferrer">Lihat di Google Maps ↗</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-kopi px-4 py-10 text-stone-300">
+    <div class="mx-auto flex max-w-6xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div><p class="font-serif text-2xl font-bold text-white">Kopi Senja</p><p class="mt-1 text-sm text-stone-400">Teman hangat untuk setiap cerita.</p></div>
+      <p class="text-xs text-stone-500">© 2026 Kopi Senja. Semua hak dilindungi.</p>
+    </div>
+  </footer>
+
+  <aside id="floatingCart" class="fixed bottom-3 left-3 right-3 z-40 translate-y-28 opacity-0 transition-all duration-300 sm:left-auto sm:right-5 sm:w-[330px]" aria-live="polite">
+    <button id="cartSummaryButton" type="button" class="flex w-full items-center justify-between rounded-2xl bg-kopi px-4 py-3.5 text-left text-white shadow-xl ring-1 ring-white/10">
+      <span class="flex items-center gap-3"><span class="relative grid h-10 w-10 place-items-center rounded-full bg-karamel text-kopi" aria-hidden="true">🛒<span id="cartCount" class="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-bata px-1 text-[10px] font-bold text-white">0</span></span><span><span class="block text-xs text-stone-400">Keranjang</span><span id="itemCount" class="text-sm font-bold">0 item</span></span></span>
+      <span id="cartTotal" class="font-bold text-karamel">Rp0</span>
+    </button>
+  </aside>
+
+  <div id="cartOverlay" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm" aria-hidden="true"></div>
+  <section id="cartDrawer" class="fixed bottom-0 right-0 z-[60] max-h-[88vh] w-full translate-y-full rounded-t-3xl bg-white shadow-2xl transition-transform duration-300 sm:top-0 sm:max-h-none sm:w-[420px] sm:translate-x-full sm:translate-y-0 sm:rounded-none" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+    <div class="flex items-center justify-between border-b border-stone-200 px-5 py-5"><div><p class="text-xs font-bold uppercase tracking-[.15em] text-bata">Pesanan Anda</p><h2 id="cartTitle" class="mt-1 font-serif text-2xl font-bold">Keranjang</h2></div><button id="closeCartButton" type="button" class="grid h-10 w-10 place-items-center rounded-full bg-stone-100 text-2xl hover:bg-stone-200" aria-label="Tutup keranjang">×</button></div>
+    <div id="cartItems" class="max-h-[calc(88vh-205px)] overflow-y-auto px-5 py-4 sm:max-h-[calc(100vh-205px)]"></div>
+    <div class="absolute inset-x-0 bottom-0 border-t border-stone-200 bg-white px-5 py-4"><div class="mb-3 flex items-center justify-between"><span class="text-sm text-stone-500">Total pembayaran</span><strong id="drawerTotal" class="text-xl">Rp0</strong></div><button id="whatsappButton" type="button" class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 py-3.5 text-sm font-bold text-white transition hover:bg-[#1ebe57] disabled:cursor-not-allowed disabled:opacity-50">Kirim Pesanan ke WhatsApp</button></div>
+  </section>
+
+  <script>
+    const products = [
+      { id: 1, name: 'Es Kopi Senja', description: 'Espresso, gula aren, dan susu segar dengan rasa manis yang seimbang.', price: 28000, image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=700&q=80' },
+      { id: 2, name: 'Kopi Susu V60', description: 'Seduhan kopi pilihan dengan karakter cokelat dan susu lembut.', price: 25000, image: 'https://images.unsplash.com/photo-1497636577773-f1231844b336?auto=format&fit=crop&w=700&q=80' },
+      { id: 3, name: 'Matcha Senja', description: 'Matcha premium dan susu segar, creamy dengan rasa yang menenangkan.', price: 30000, image: 'https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=700&q=80' },
+      { id: 4, name: 'Roti Bakar Cokelat', description: 'Roti panggang hangat dengan isian cokelat lumer dan taburan kacang.', price: 22000, image: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=700&q=80' },
+      { id: 5, name: 'Croissant Butter', description: 'Pastry renyah berlapis dengan aroma mentega yang harum.', price: 24000, image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=700&q=80' },
+      { id: 6, name: 'Kentang Senja', description: 'Kentang goreng renyah berbumbu gurih, cocok untuk teman berbagi.', price: 18000, image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=700&q=80' }
+    ];
+    const cart = new Map();
+    const productGrid = document.getElementById('productGrid');
+    const floatingCart = document.getElementById('floatingCart');
+    const cartOverlay = document.getElementById('cartOverlay');
+    const cartDrawer = document.getElementById('cartDrawer');
+    const rupiah = value => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value);
+
+    productGrid.innerHTML = products.map(product => `
+      <article class="overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
+        <img src="${product.image}" alt="${product.name}" class="h-56 w-full object-cover" loading="lazy">
+        <div class="p-5">
+          <div class="flex items-start justify-between gap-3"><h3 class="font-serif text-xl font-bold">${product.name}</h3><span class="shrink-0 text-sm font-bold text-bata">${rupiah(product.price)}</span></div>
+          <p class="mt-2 min-h-12 text-sm leading-6 text-stone-500">${product.description}</p>
+          <button type="button" data-add="${product.id}" class="mt-5 w-full rounded-xl border border-kopi px-4 py-3 text-sm font-bold transition hover:bg-kopi hover:text-white">+ Tambah ke Keranjang</button>
+        </div>
+      </article>
+    `).join('');
+
+    function countItems() {
+      return Array.from(cart.values()).reduce((sum, item) => sum + item.quantity, 0);
+    }
+
+    function totalPrice() {
+      return Array.from(cart.values()).reduce((sum, item) => sum + item.price * item.quantity, 0);
+    }
+
+    function renderCart() {
+      const count = countItems();
+      const total = totalPrice();
+      document.getElementById('cartCount').textContent = count;
+      document.getElementById('itemCount').textContent = `${count} item`;
+      document.getElementById('cartTotal').textContent = rupiah(total);
+      document.getElementById('drawerTotal').textContent = rupiah(total);
+      document.getElementById('headerCount').textContent = count;
+      document.getElementById('headerCount').classList.toggle('hidden', count === 0);
+      floatingCart.classList.toggle('translate-y-28', count === 0);
+      floatingCart.classList.toggle('opacity-0', count === 0);
+      document.getElementById('whatsappButton').disabled = count === 0;
+      const cartItems = document.getElementById('cartItems');
+
+      if (count === 0) {
+        cartItems.innerHTML = '<div class="grid min-h-56 place-items-center text-center"><div><span class="text-4xl" aria-hidden="true">☕</span><p class="mt-3 font-bold">Keranjang masih kosong</p><p class="mt-1 text-sm text-stone-500">Pilih menu favoritmu dulu.</p></div></div>';
+        return;
+      }
+      cartItems.innerHTML = Array.from(cart.values()).map(item => `
+        <div class="flex items-center gap-3 border-b border-stone-100 py-4 last:border-0">
+          <img src="${item.image}" alt="" class="h-16 w-16 rounded-xl object-cover">
+          <div class="min-w-0 flex-1"><p class="truncate text-sm font-bold">${item.name}</p><p class="mt-1 text-xs text-bata">${rupiah(item.price)}</p></div>
+          <div class="flex items-center gap-2">
+            <button type="button" data-minus="${item.id}" class="grid h-8 w-8 place-items-center rounded-full bg-stone-100 font-bold" aria-label="Kurangi ${item.name}">−</button>
+            <span class="w-5 text-center text-sm font-bold">${item.quantity}</span>
+            <button type="button" data-plus="${item.id}" class="grid h-8 w-8 place-items-center rounded-full bg-kopi font-bold text-white" aria-label="Tambah ${item.name}">+</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openCart() {
+      cartOverlay.classList.remove('hidden');
+      cartOverlay.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      requestAnimationFrame(() => cartDrawer.classList.remove('translate-y-full', 'sm:translate-x-full'));
+      document.getElementById('closeCartButton').focus();
+    }
+
+    function closeCart() {
+      cartDrawer.classList.add('translate-y-full', 'sm:translate-x-full');
+      cartOverlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      window.setTimeout(() => cartOverlay.classList.add('hidden'), 300);
+    }
+
+    productGrid.addEventListener('click', event => {
+      const button = event.target.closest('[data-add]');
+      if (!button) return;
+      const product = products.find(item => item.id === Number(button.dataset.add));
+      if (!product) return;
+      const current = cart.get(product.id);
+      cart.set(product.id, { ...product, quantity: current ? current.quantity + 1 : 1 });
+      renderCart();
+      button.textContent = '✓ Ditambahkan';
+      window.setTimeout(() => { button.textContent = '+ Tambah ke Keranjang'; }, 900);
+    });
+
+    document.getElementById('cartItems').addEventListener('click', event => {
+      const plus = event.target.closest('[data-plus]');
+      const minus = event.target.closest('[data-minus]');
+      if (plus) {
+        const item = cart.get(Number(plus.dataset.plus));
+        if (item) cart.set(item.id, { ...item, quantity: item.quantity + 1 });
+      } else if (minus) {
+        const item = cart.get(Number(minus.dataset.minus));
+        if (item) {
+          if (item.quantity > 1) cart.set(item.id, { ...item, quantity: item.quantity - 1 });
+          else cart.delete(item.id);
+        }
+      } else return;
+      renderCart();
+    });
+
+    document.getElementById('cartSummaryButton').addEventListener('click', openCart);
+    document.getElementById('headerCartButton').addEventListener('click', openCart);
+    document.getElementById('closeCartButton').addEventListener('click', closeCart);
+    cartOverlay.addEventListener('click', closeCart);
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && !cartOverlay.classList.contains('hidden')) closeCart();
+    });
+
+    document.getElementById('whatsappButton').addEventListener('click', () => {
+      if (cart.size === 0) return;
+      const message = ['Halo Kopi Senja, saya ingin memesan:', ''];
+      Array.from(cart.values()).forEach(item => message.push(`• ${item.name} x${item.quantity} — ${rupiah(item.price * item.quantity)}`));
+      message.push('', `Total: ${rupiah(totalPrice())}`, '', 'Mohon informasi untuk proses pemesanannya. Terima kasih!');
+      const whatsappNumber = '6281234567890';
+      window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message.join('\n'))}`, '_blank', 'noopener,noreferrer');
+    });
+
+    renderCart();
+  </script>
+</body>
+</html>
