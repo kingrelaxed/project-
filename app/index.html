@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0B1120">
+  <meta name="description" content="A simple freelancer income, expense, and estimated tax tracker.">
+  <title>Freelancer Income, Expense &amp; Tax Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { color-scheme: dark; }
+    body { background: #0B1120; }
+    input, select, textarea { color-scheme: dark; }
+    input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.8); }
+    .focus-ring:focus { outline: 2px solid #10B981; outline-offset: 2px; }
+    .scrollbar-thin { scrollbar-width: thin; scrollbar-color: #374151 transparent; }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100 antialiased">
+  <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
+    <header class="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <div class="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold tracking-wide text-emerald-300">
+          <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+          FREELANCER FINANCE
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight text-white sm:text-3xl">Income, Expense <span class="text-emerald-400">&amp; Tax Tracker</span></h1>
+        <p class="mt-2 max-w-2xl text-sm text-slate-400">A clear view of your freelance finances, wherever the work takes you.</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button id="exportCsvBtn" type="button" class="focus-ring rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-slate-500 hover:bg-slate-800">Export CSV</button>
+        <button id="exportJsonBtn" type="button" class="focus-ring rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-slate-500 hover:bg-slate-800">Export JSON</button>
+        <button id="importJsonBtn" type="button" class="focus-ring rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400">Import JSON</button>
+        <input id="importFile" type="file" accept=".json,application/json" class="hidden" aria-label="Choose a JSON backup file">
+      </div>
+    </header>
+
+    <div id="notice" role="status" aria-live="polite" class="mb-5 hidden rounded-lg border px-4 py-3 text-sm"></div>
+
+    <section aria-labelledby="settingsHeading" class="mb-6 rounded-2xl border border-slate-800 bg-[#111827] p-4 sm:p-5">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 id="settingsHeading" class="text-sm font-semibold text-white">Settings &amp; reporting period</h2>
+        <span class="text-xs text-slate-500">Saved automatically</span>
+      </div>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <label class="block text-xs font-medium text-slate-400">
+          Estimated Tax Rate (%)
+          <input id="taxRate" type="number" min="0" max="100" step="0.1" value="20" class="focus-ring mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white">
+        </label>
+        <label class="block text-xs font-medium text-slate-400">
+          Currency
+          <select id="currency" class="focus-ring mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white">
+            <option value="USD">USD ($)</option>
+            <option value="IDR">IDR (Rp)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="GBP">GBP (£)</option>
+          </select>
+        </label>
+        <label class="block text-xs font-medium text-slate-400">
+          Year
+          <select id="yearFilter" class="focus-ring mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white">
+            <option value="all">All Time</option>
+          </select>
+        </label>
+        <label class="block text-xs font-medium text-slate-400">
+          Month
+          <select id="monthFilter" class="focus-ring mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white">
+            <option value="all">All Months</option>
+            <option value="01">January</option><option value="02">February</option>
+            <option value="03">March</option><option value="04">April</option>
+            <option value="05">May</option><option value="06">June</option>
+            <option value="07">July</option><option value="08">August</option>
+            <option value="09">September</option><option value="10">October</option>
+            <option value="11">November</option><option value="12">December</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section aria-labelledby="summaryHeading" class="mb-8">
+      <div class="mb-4 flex items-end justify-between gap-3">
+        <div>
+          <h2 id="summaryHeading" class="text-lg font-semibold text-white">Financial overview</h2>
+          <p id="periodCaption" class="mt-1 text-xs text-slate-500">All transactions</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <article class="rounded-2xl border border-slate-800 bg-[#111827] p-5">
+          <p class="text-sm text-slate-400">Gross Income</p>
+          <p id="grossTotal" class="mt-3 text-2xl font-bold text-white">$0.00</p>
+          <p class="mt-2 text-xs text-slate-500">Total income recorded</p>
+        </article>
+        <article class="rounded-2xl border border-slate-800 bg-[#111827] p-5">
+          <p class="text-sm text-slate-400">Total Expenses</p>
+          <p id="expenseTotal" class="mt-3 text-2xl font-bold text-white">$0.00</p>
+          <p class="mt-2 text-xs text-slate-500">All recorded expenses</p>
+        </article>
+        <article class="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.07] p-5">
+          <p class="text-sm text-emerald-200">Net Income</p>
+          <p id="netTotal" class="mt-3 text-2xl font-bold text-emerald-300">$0.00</p>
+          <p class="mt-2 text-xs text-emerald-100/50">Gross income minus expenses</p>
+        </article>
+        <article class="rounded-2xl border border-slate-800 bg-[#111827] p-5">
+          <p class="text-sm text-slate-400">Estimated Tax Reserve</p>
+          <p id="taxTotal" class="mt-3 text-2xl font-bold text-amber-300">$0.00</p>
+          <p id="taxCaption" class="mt-2 text-xs text-slate-500">20% of positive net income</p>
+        </article>
+        <article class="rounded-2xl border border-slate-800 bg-[#111827] p-5">
+          <p class="text-sm text-slate-400">Deductible Expenses</p>
+          <p id="deductibleTotal" class="mt-3 text-2xl font-bold text-white">$0.00</p>
+          <p class="mt-2 text-xs text-slate-500">Expenses marked tax deductible</p>
+        </article>
+      </div>
+      <p class="mt-3 text-xs leading-5 text-slate-500">This tracker provides estimates only, not tax or accounting advice. Confirm deductions and tax obligations with a qualified professional.</p>
+    </section>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(300px,0.8fr)_minmax(0,1.6fr)]">
+      <section aria-labelledby="formHeading" class="h-fit rounded-2xl border border-slate-800 bg-[#111827] p-5 sm:p-6">
+        <div class="mb-5">
+          <h2 id="formHeading" class="text-lg font-semibold text-white">Add a transaction</h2>
+          <p class="mt-1 text-sm text-slate-400">Keep your freelance finances up to date.</p>
+        </div>
+        <form id="transactionForm" class="space-y-4">
+          <div>
+            <span class="mb-2 block text-xs font-medium text-slate-400">Transaction type</span>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="cursor-pointer">
+                <input type="radio" name="type" value="income" checked class="peer sr-only">
+                <span class="focus-ring block rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-center text-sm text-slate-400 transition peer-checked:border-emerald-500/60 peer-checked:bg-emerald-500/10 peer-checked:font-semibold peer-checked:text-emerald-300">Income</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="type" value="expense" class="peer sr-only">
+                <span class="focus-ring block rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-center text-sm text-slate-400 transition peer-checked:border-rose-500/60 peer-checked:bg-rose-500/10 peer-checked:font-semibold peer-checked:text-rose-300">Expense</span>
+              </label>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label class="block text-xs font-medium text-slate-400">Date
+              <input id="date" name="date" type="date" required class="focus-ring mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white">
+            </label>
+            <label class="block text-xs font-medium text-slate-400">Client / Vendor
+              <input name="party" type="text" maxlength="80" placeholder="e.g. Acme Studio" class="focus-ring mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white placeholder:text-slate-600">
+            </label>
+          </div>
+          <label class="block text-xs font-medium text-slate-400">Category
+            <select id="category" name="category" required class="focus-ring mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white"></select>
+          </label>
+          <label class="block text-xs font-medium text-slate-400">Short description
+            <input name="description" type="text" maxlength="120" placeholder="What was this transaction for?" class="focus-ring mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white placeholder:text-slate-600">
+          </label>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label class="block text-xs font-medium text-slate-400">Amount
+              <input name="amount" type="number" min="0.01" step="0.01" required placeholder="0.00" class="focus-ring mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white placeholder:text-slate-600">
+            </label>
+            <label id="feeField" class="block text-xs font-medium text-slate-400">Platform Fee <span class="text-slate-600">(optional)</span>
+              <input name="fee" type="number" min="0" step="0.01" placeholder="0.00" class="focus-ring mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white placeholder:text-slate-600">
+            </label>
+          </div>
+          <label class="block text-xs font-medium text-slate-400">Payment status
+            <select name="status" class="focus-ring mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white">
+              <option value="paid">Paid</option>
+              <option value="pending">Pending</option>
+              <option value="overdue">Overdue</option>
+            </select>
+          </label>
+          <label id="deductibleField" class="hidden items-center gap-2.5 rounded-lg border border-slate-700/70 bg-slate-950/60 p-3 text-sm text-slate-300">
+            <input name="deductible" type="checkbox" class="h-4 w-4 rounded border-slate-600 bg-slate-900 text-emerald-500 focus:ring-emerald-500">
+            <span>Tax deductible expense</span>
+          </label>
+          <button type="submit" class="focus-ring w-full rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400">Add transaction</button>
+        </form>
+      </section>
+
+      <section aria-labelledby="historyHeading" class="min-w-0 rounded-2xl border border-slate-800 bg-[#111827] p-5 sm:p-6">
+        <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 id="historyHeading" class="text-lg font-semibold text-white">Transaction history</h2>
+            <p id="transactionCount" class="mt-1 text-sm text-slate-400">0 transactions</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button id="sampleBtn" type="button" class="focus-ring rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-300 transition hover:bg-emerald-500/20">Load Sample Data</button>
+            <button id="clearBtn" type="button" class="focus-ring rounded-lg border border-rose-500/30 px-3 py-2 text-xs font-semibold text-rose-300 transition hover:bg-rose-500/10">Clear All Data</button>
+          </div>
+        </div>
+        <div class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_160px_160px]">
+          <label>
+            <span class="sr-only">Search transactions</span>
+            <input id="searchFilter" type="search" placeholder="Search client, category, description..." class="focus-ring w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white placeholder:text-slate-600">
+          </label>
+          <label>
+            <span class="sr-only">Filter by type</span>
+            <select id="typeFilter" class="focus-ring w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white">
+              <option value="all">All types</option><option value="income">Income</option><option value="expense">Expense</option>
+            </select>
+          </label>
+          <label>
+            <span class="sr-only">Filter by status</span>
+            <select id="statusFilter" class="focus-ring w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white">
+              <option value="all">All statuses</option><option value="paid">Paid</option><option value="pending">Pending</option><option value="overdue">Overdue</option>
+            </select>
+          </label>
+        </div>
+        <div class="scrollbar-thin overflow-x-auto">
+          <table class="w-full min-w-[720px] text-left text-sm">
+            <thead class="border-b border-slate-800 text-xs uppercase tracking-wide text-slate-500">
+              <tr><th class="pb-3 pr-4 font-medium">Transaction</th><th class="pb-3 pr-4 font-medium">Type / Status</th><th class="pb-3 pr-4 font-medium">Date</th><th class="pb-3 pr-4 text-right font-medium">Amount</th><th class="pb-3 text-right font-medium">Action</th></tr>
+            </thead>
+            <tbody id="transactionRows" class="divide-y divide-slate-800/80"></tbody>
+          </table>
+        </div>
+        <div id="emptyState" class="hidden py-12 text-center">
+          <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-800 text-xl text-slate-400">$</div>
+          <p class="font-medium text-slate-200">No transactions found</p>
+          <p class="mt-1 text-sm text-slate-500">Add a transaction or adjust your filters.</p>
+        </div>
+      </section>
+    </div>
+    <footer class="mt-8 border-t border-slate-800/80 pt-5 text-center text-xs text-slate-500">
+      Your financial data stays in this browser. Export a backup before moving to another device.
+    </footer>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+      const STORAGE_KEY = "freelancer-income-expense-tax-tracker-v1";
+      const CATEGORIES = {
+        income: ["Client Project", "Retainer", "Digital Product", "Other"],
+        expense: ["Software/SaaS", "Hardware", "Marketing", "Internet/Utilities", "Office", "Other"]
+      };
+      const DEFAULT_SETTINGS = { taxRate: 20, currency: "USD" };
+      let transactions = [];
+      let settings = { ...DEFAULT_SETTINGS };
+      let noticeTimer;
+
+      const $ = (selector) => document.querySelector(selector);
+      const els = {
+        notice: $("#notice"), taxRate: $("#taxRate"), currency: $("#currency"),
+        yearFilter: $("#yearFilter"), monthFilter: $("#monthFilter"),
+        grossTotal: $("#grossTotal"), expenseTotal: $("#expenseTotal"),
+        netTotal: $("#netTotal"), taxTotal: $("#taxTotal"),
+        deductibleTotal: $("#deductibleTotal"), taxCaption: $("#taxCaption"),
+        periodCaption: $("#periodCaption"), form: $("#transactionForm"),
+        date: $("#date"), category: $("#category"), feeField: $("#feeField"),
+        deductibleField: $("#deductibleField"), rows: $("#transactionRows"),
+        emptyState: $("#emptyState"), count: $("#transactionCount"),
+        search: $("#searchFilter"), typeFilter: $("#typeFilter"),
+        statusFilter: $("#statusFilter"), importFile: $("#importFile")
+      };
+
+      function showNotice(message, kind = "success") {
+        clearTimeout(noticeTimer);
+        els.notice.textContent = message;
+        els.notice.className = "mb-5 rounded-lg border px-4 py-3 text-sm " +
+          (kind === "error"
+            ? "border-rose-500/30 bg-rose-500/10 text-rose-200"
+            : "border-emerald-500/30 bg-emerald-500/10 text-emerald-200");
+        noticeTimer = setTimeout(() => els.notice.classList.add("hidden"), 5000);
+      }
+
+      function loadSavedData() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return;
+          const saved = JSON.parse(raw);
+          if (!saved || typeof saved !== "object" || !Array.isArray(saved.transactions)) {
+            throw new Error("The saved data does not have the expected format.");
+          }
+          transactions = saved.transactions.map(normalizeTransaction);
+          settings = normalizeSettings(saved.settings);
+        } catch (error) {
+          console.error("Could not load saved tracker data:", error);
+          transactions = [];
+          settings = { ...DEFAULT_SETTINGS };
+          showNotice("Saved data could not be loaded. It may be damaged; export or restore a valid JSON backup.", "error");
+        }
+      }
+
+      function normalizeSettings(value) {
+        const taxRate = Number(value && value.taxRate);
+        const currency = value && value.currency;
+        return {
+          taxRate: Number.isFinite(taxRate) && taxRate >= 0 && taxRate <= 100 ? taxRate : DEFAULT_SETTINGS.taxRate,
+          currency: ["USD", "IDR", "EUR", "GBP"].includes(currency) ? currency : DEFAULT_SETTINGS.currency
+        };
+      }
+
+      function normalizeTransaction(item) {
+        if (!item || typeof item !== "object" ||
+            !["income", "expense"].includes(item.type) ||
+            !["paid", "pending", "overdue"].includes(item.status) ||
+            typeof item.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(item.date) ||
+            !Number.isFinite(Number(item.amount)) || Number(item.amount) <= 0) {
+          throw new Error("A transaction in the saved data is invalid.");
+        }
+        const [year, month, day] = item.date.split("-").map(Number);
+        const date = new Date(Date.UTC(year, month - 1, day));
+        if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== item.date) {
+          throw new Error("A transaction has an invalid date.");
+        }
+        const categoryList = CATEGORIES[item.type];
+        const category = categoryList.includes(item.category) ? item.category : "Other";
+        const fee = item.type === "income" && Number.isFinite(Number(item.fee)) && Number(item.fee) >= 0
+          ? Number(item.fee) : 0;
+        return {
+          id: typeof item.id === "string" && item.id.length <= 100 ? item.id : createId(),
+          type: item.type, date: item.date,
+          party: cleanText(item.party, 80),
+          category,
+          description: cleanText(item.description, 120),
+          amount: Number(item.amount), fee, status: item.status,
+          deductible: item.type === "expense" && item.deductible === true
+        };
+      }
+
+      function cleanText(value, maxLength) {
+        return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
+      }
+
+      function createId() {
+        return typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : Date.now().toString(36) + Math.random().toString(36).slice(2);
+      }
+
+      function localDateString(date = new Date()) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
+      function saveData() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, settings, transactions }));
+          return true;
+        } catch (error) {
+          console.error("Could not save tracker data:", error);
+          showNotice("Could not save changes to this browser. Check available storage and try exporting a backup.", "error");
+          return false;
+        }
+      }
+
+      function formatMoney(value) {
+        return new Intl.NumberFormat("en-US", {
+          style: "currency", currency: settings.currency,
+          maximumFractionDigits: settings.currency === "IDR" ? 0 : 2
+        }).format(Number.isFinite(value) ? value : 0);
+      }
+
+      function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, (char) => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        })[char]);
+      }
+
+      function selectedTransactions() {
+        const year = els.yearFilter.value;
+        const month = els.monthFilter.value;
+        return transactions.filter((item) =>
+          (year === "all" || item.date.slice(0, 4) === year) &&
+          (month === "all" || item.date.slice(5, 7) === month)
+        );
+      }
+
+      function renderYears() {
+        const selected = els.yearFilter.value || "all";
+        const years = [...new Set(transactions.map((item) => item.date.slice(0, 4)))].sort().reverse();
+        els.yearFilter.innerHTML = '<option value="all">All Time</option>' +
+          years.map((year) => `<option value="${year}">${year}</option>`).join("");
+        els.yearFilter.value = years.includes(selected) ? selected : "all";
+      }
+
+      function renderSummary() {
+        const filtered = selectedTransactions();
+        const income = filtered.filter((item) => item.type === "income");
+        const expenses = filtered.filter((item) => item.type === "expense");
+        const gross = income.reduce((sum, item) => sum + item.amount, 0);
+        const expenseTotal = expenses.reduce((sum, item) => sum + item.amount, 0);
+        const net = gross - expenseTotal;
+        const deductible = expenses.filter((item) => item.deductible).reduce((sum, item) => sum + item.amount, 0);
+        els.grossTotal.textContent = formatMoney(gross);
+        els.expenseTotal.textContent = formatMoney(expenseTotal);
+        els.netTotal.textContent = formatMoney(net);
+        els.taxTotal.textContent = formatMoney(net > 0 ? net * settings.taxRate / 100 : 0);
+        els.deductibleTotal.textContent = formatMoney(deductible);
+        els.taxCaption.textContent = `${settings.taxRate}% of positive net income`;
+        const year = els.yearFilter.value;
+        const month = els.monthFilter.value;
+        const monthLabel = month === "all" ? "" : ` · ${new Date(2000, Number(month) - 1).toLocaleString("en-US", { month: "long" })}`;
+        els.periodCaption.textContent = year === "all"
+          ? (month === "all" ? "All transactions" : `All years${monthLabel}`)
+          : `${year}${monthLabel}`;
+      }
+
+      function renderTransactions() {
+        const query = els.search.value.trim().toLowerCase();
+        const type = els.typeFilter.value;
+        const status = els.statusFilter.value;
+        const displayed = selectedTransactions()
+          .filter((item) =>
+            (type === "all" || item.type === type) &&
+            (status === "all" || item.status === status) &&
+            (!query || [item.party, item.category, item.description].some((value) => value.toLowerCase().includes(query))
+              || item.date.includes(query))
+          )
+          .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+
+        els.count.textContent = `${displayed.length} ${displayed.length === 1 ? "transaction" : "transactions"}`;
+        els.emptyState.classList.toggle("hidden", displayed.length !== 0);
+        els.rows.innerHTML = displayed.map((item) => {
+          const typeStyle = item.type === "income"
+            ? "bg-emerald-500/10 text-emerald-300"
+            : "bg-rose-500/10 text-rose-300";
+          const statusStyle = {
+            paid: "bg-slate-700/60 text-slate-300",
+            pending: "bg-amber-500/10 text-amber-300",
+            overdue: "bg-rose-500/10 text-rose-300"
+          }[item.status];
+          const title = item.description || item.category;
+          const dateText = new Date(item.date + "T00:00:00").toLocaleDateString("en-US", {
+            month: "short", day: "numeric", year: "numeric"
+          });
+          return `<tr>
+            <td class="py-4 pr-4">
+              <div class="max-w-[260px] truncate font-medium text-slate-200" title="${escapeHtml(title)}">${escapeHtml(title)}</div>
+              <div class="mt-1 text-xs text-slate-500">${escapeHtml(item.party || item.category)}${item.deductible ? " · Deductible" : ""}</div>
+            </td>
+            <td class="py-4 pr-4">
+              <div class="flex items-center gap-1.5">
+                <span class="rounded-md px-2 py-1 text-[10px] font-semibold uppercase ${typeStyle}">${item.type}</span>
+                <span class="rounded-md px-2 py-1 text-[10px] font-semibold capitalize ${statusStyle}">${item.status}</span>
+              </div>
+            </td>
+            <td class="whitespace-nowrap py-4 pr-4 text-slate-400">${dateText}</td>
+            <td class="whitespace-nowrap py-4 pr-4 text-right font-semibold ${item.type === "income" ? "text-emerald-300" : "text-slate-200"}">${item.type === "expense" ? "−" : "+"}${formatMoney(item.amount)}${item.type === "income" && item.fee ? `<div class="mt-1 text-xs font-normal text-slate-500">Fee ${formatMoney(item.fee)}</div>` : ""}</td>
+            <td class="py-4 text-right"><button type="button" data-delete="${escapeHtml(item.id)}" class="focus-ring rounded-md px-2 py-1 text-xs text-slate-500 transition hover:bg-rose-500/10 hover:text-rose-300" aria-label="Delete ${escapeHtml(title)}">Delete</button></td>
+          </tr>`;
+        }).join("");
+      }
+
+      function render() {
+        renderYears();
+        renderSummary();
+        renderTransactions();
+      }
+
+      function updateTypeFields() {
+        const type = new FormData(els.form).get("type");
+        els.category.innerHTML = CATEGORIES[type].map((item) =>
+          `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`
+        ).join("");
+        els.feeField.classList.toggle("hidden", type !== "income");
+        els.deductibleField.classList.toggle("hidden", type !== "expense");
+        els.deductibleField.classList.toggle("flex", type === "expense");
+        els.form.elements.fee.disabled = type !== "income";
+        els.form.elements.deductible.disabled = type !== "expense";
+      }
+
+      function csvCell(value) {
+        const text = String(value ?? "");
+        return `"${text.replace(/"/g, '""')}"`;
+      }
+
+      function downloadFile(filename, content, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.append(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+
+      function exportCsv() {
+        const columns = ["Date", "Type", "Client / Vendor", "Category", "Description", "Amount", "Platform Fee", "Status", "Tax Deductible", "Currency"];
+        const rows = [...transactions].sort((a, b) => a.date.localeCompare(b.date)).map((item) => [
+          item.date, item.type, item.party, item.category, item.description,
+          item.amount, item.fee, item.status, item.deductible ? "Yes" : "No", settings.currency
+        ]);
+        const csv = "\uFEFF" + [columns, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
+        downloadFile("freelancer-transactions.csv", csv, "text/csv;charset=utf-8");
+        showNotice("CSV report exported.");
+      }
+
+      function exportJson() {
+        const backup = { version: 1, exportedAt: new Date().toISOString(), settings, transactions };
+        downloadFile("freelancer-tracker-backup.json", JSON.stringify(backup, null, 2), "application/json");
+        showNotice("JSON backup exported.");
+      }
+
+      const sampleTransactions = () => {
+        const today = new Date();
+        const day = (offset) => {
+          const date = new Date(today);
+          date.setDate(date.getDate() - offset);
+          return localDateString(date);
+        };
+        return [
+          { id: createId(), type: "income", date: day(2), party: "Northstar Studio", category: "Client Project", description: "Brand identity design", amount: 2400, fee: 72, status: "paid", deductible: false },
+          { id: createId(), type: "expense", date: day(4), party: "Figma", category: "Software/SaaS", description: "Monthly design subscription", amount: 24, fee: 0, status: "paid", deductible: true },
+          { id: createId(), type: "income", date: day(8), party: "Brightside Co.", category: "Retainer", description: "Monthly creative retainer", amount: 1200, fee: 0, status: "pending", deductible: false },
+          { id: createId(), type: "expense", date: day(12), party: "Local ISP", category: "Internet/Utilities", description: "Business internet", amount: 65, fee: 0, status: "paid", deductible: true },
+          { id: createId(), type: "income", date: day(18), party: "Online Store", category: "Digital Product", description: "Template sales", amount: 380, fee: 19, status: "overdue", deductible: false }
+        ];
+      };
+
+      els.date.value = localDateString();
+      loadSavedData();
+      els.taxRate.value = settings.taxRate;
+      els.currency.value = settings.currency;
+      updateTypeFields();
+      render();
+
+      els.form.addEventListener("change", (event) => {
+        if (event.target.name === "type") updateTypeFields();
+      });
+      els.form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const data = new FormData(els.form);
+        const amount = Number(data.get("amount"));
+        const fee = Number(data.get("fee") || 0);
+        if (!Number.isFinite(amount) || amount <= 0 || !Number.isFinite(fee) || fee < 0) {
+          showNotice("Enter a valid amount and a platform fee of zero or more.", "error");
+          return;
+        }
+        const transaction = normalizeTransaction({
+          id: createId(), type: data.get("type"), date: data.get("date"),
+          party: data.get("party"), category: data.get("category"),
+          description: data.get("description"), amount, fee,
+          status: data.get("status"), deductible: data.get("deductible") === "on"
+        });
+        transactions.push(transaction);
+        if (!saveData()) {
+          transactions.pop();
+          return;
+        }
+        els.form.reset();
+        els.date.value = localDateString();
+        updateTypeFields();
+        render();
+        showNotice("Transaction added.");
+      });
+
+      els.taxRate.addEventListener("change", () => {
+        const value = Number(els.taxRate.value);
+        if (!Number.isFinite(value) || value < 0 || value > 100) {
+          els.taxRate.value = settings.taxRate;
+          showNotice("Tax rate must be between 0 and 100.", "error");
+          return;
+        }
+        const previous = settings.taxRate;
+        settings.taxRate = value;
+        if (!saveData()) {
+          settings.taxRate = previous;
+          els.taxRate.value = previous;
+        }
+        renderSummary();
+      });
+      els.currency.addEventListener("change", () => {
+        const previous = settings.currency;
+        settings.currency = els.currency.value;
+        if (!saveData()) {
+          settings.currency = previous;
+          els.currency.value = previous;
+        }
+        renderSummary();
+        renderTransactions();
+      });
+      [els.yearFilter, els.monthFilter].forEach((input) => input.addEventListener("change", () => {
+        renderSummary();
+        renderTransactions();
+      }));
+      [els.search, els.typeFilter, els.statusFilter].forEach((input) => input.addEventListener("input", renderTransactions));
+      $("#transactionRows").addEventListener("click", (event) => {
+        const button = event.target.closest("[data-delete]");
+        if (!button) return;
+        const previous = transactions;
+        transactions = transactions.filter((item) => item.id !== button.dataset.delete);
+        if (saveData()) {
+          render();
+          showNotice("Transaction deleted.");
+        } else {
+          transactions = previous;
+        }
+      });
+      $("#clearBtn").addEventListener("click", () => {
+        if (!transactions.length) {
+          showNotice("There are no transactions to clear.", "error");
+          return;
+        }
+        if (!window.confirm("Delete all transactions? Your tax and currency settings will be kept.")) return;
+        const previous = transactions;
+        transactions = [];
+        if (saveData()) {
+          render();
+          showNotice("All transactions cleared.");
+        } else {
+          transactions = previous;
+          render();
+        }
+      });
+      $("#sampleBtn").addEventListener("click", () => {
+        if (transactions.length && !window.confirm("Replace your current transactions with sample data?")) return;
+        const previous = transactions;
+        transactions = sampleTransactions();
+        if (saveData()) {
+          els.yearFilter.value = "all";
+          els.monthFilter.value = "all";
+          render();
+          showNotice("Sample transactions loaded.");
+        } else {
+          transactions = previous;
+          render();
+        }
+      });
+      $("#exportCsvBtn").addEventListener("click", exportCsv);
+      $("#exportJsonBtn").addEventListener("click", exportJson);
+      $("#importJsonBtn").addEventListener("click", () => els.importFile.click());
+      els.importFile.addEventListener("change", async () => {
+        const file = els.importFile.files && els.importFile.files[0];
+        if (!file) return;
+        try {
+          const content = await file.text();
+          const backup = JSON.parse(content);
+          if (!backup || !Array.isArray(backup.transactions)) {
+            throw new Error("This file is not a valid tracker backup.");
+          }
+          const imported = backup.transactions.map(normalizeTransaction);
+          const importedSettings = normalizeSettings(backup.settings);
+          if (!window.confirm(`Import ${imported.length} transactions and replace the data in this browser?`)) return;
+          const previousTransactions = transactions;
+          const previousSettings = settings;
+          transactions = imported;
+          settings = importedSettings;
+          if (saveData()) {
+            els.taxRate.value = settings.taxRate;
+            els.currency.value = settings.currency;
+            els.yearFilter.value = "all";
+            els.monthFilter.value = "all";
+            render();
+            showNotice(`Imported ${imported.length} transactions.`);
+          } else {
+            transactions = previousTransactions;
+            settings = previousSettings;
+          }
+        } catch (error) {
+          console.error("Could not import JSON backup:", error);
+          showNotice(error instanceof SyntaxError
+            ? "The selected file is not valid JSON."
+            : `Import failed: ${error.message}`, "error");
+        } finally {
+          els.importFile.value = "";
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
