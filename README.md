@@ -1,16 +1,17 @@
-# Freelancer Income, Expense & Tax Tracker
+# Xauzy — Web Design & Development
 
-A lightweight, mobile-friendly freelancer finance tracker built as a single-page app. The complete app (HTML, Tailwind CSS via CDN, and vanilla JavaScript) is in `index.html`; no build step or separate source files are required.
+Xauzy is a responsive portfolio and project-request landing page. The main page is `index.html` at the repository root; it uses Tailwind CSS from its CDN and vanilla JavaScript, with no build step. The legacy `/xauzy/` path is kept as a redirect to the root page.
 
 ## Run locally
 
-Open `index.html` in a modern browser, or serve this folder with any static web server. Your transactions and settings are stored in that browser's `localStorage`.
+Open `index.html` in a modern browser or serve the repository root with any static web server.
+
+## Portfolio pages
+
+- `kopi-senja/` — local business landing page
+- `raka-studio/` — creator bio link and portfolio
+- `app/` — freelancer income and tax tracker
 
 ## Deploy
 
-- **Custom domain:** The repository includes a `CNAME` file for `xauzy.id`. Configure DNS with the domain provider and enable HTTPS in GitHub Pages.
-
-- **GitHub Pages:** Push the repository, then in **Settings → Pages**, choose the branch and repository root as the source.
-- **Vercel:** Import the repository and deploy it as a static site. No build command or output directory is needed; `index.html` is at the repository root.
-
-Export a JSON backup before switching browsers or devices. The tax reserve is an estimate, not tax advice.
+For GitHub Pages, push the repository and select the `main` branch and repository root in **Settings → Pages**. The site can also be deployed with any static hosting provider; no build command or output directory is required.
